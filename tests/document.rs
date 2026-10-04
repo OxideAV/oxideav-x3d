@@ -125,3 +125,28 @@ fn hostile_inputs_do_not_panic() {
     let out = write_xml(&d);
     assert!(out.contains("USE"));
 }
+
+#[test]
+fn deep_nesting_is_bounded_without_stack_overflow() {
+    use oxideav_mesh3d::Mesh3DDecoder;
+    use oxideav_mesh3d::Mesh3DEncoder;
+    for depth in [200usize, 245, 300, 5000] {
+        let x = format!(
+            "<X3D><Scene>{}<Shape><Box/></Shape>{}</Scene></X3D>",
+            "<Transform>".repeat(depth),
+            "</Transform>".repeat(depth)
+        );
+        let r = oxideav_x3d::X3dDecoder::new().decode(x.as_bytes());
+        if depth < 250 {
+            let s = r.unwrap_or_else(|e| panic!("{depth}: {e}"));
+            // Writers recurse too.
+            let doc = parse_document(x.as_bytes()).unwrap();
+            assert!(write_xml(&doc).len() > depth);
+            assert!(oxideav_x3d::write_classic(&doc).len() > depth);
+            let out = oxideav_x3d::X3dEncoder::new().encode(&s).unwrap();
+            assert!(out.len() > depth);
+        } else {
+            assert!(r.is_err(), "{depth}");
+        }
+    }
+}

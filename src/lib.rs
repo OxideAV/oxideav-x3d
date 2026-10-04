@@ -36,6 +36,7 @@
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
+pub mod classic;
 pub mod convert;
 pub mod decoder;
 pub mod document;
@@ -47,6 +48,7 @@ pub mod xml;
 pub mod xml_reader;
 pub mod xml_writer;
 
+pub use classic::{read_classic, write_classic};
 pub use convert::{document_to_scene, ConvertOptions};
 pub use decoder::X3dDecoder;
 pub use document::{NodeIdx, X3dDocument, X3dNode};
@@ -61,7 +63,8 @@ pub use xml_writer::write_xml;
 /// * decoder `"x3d"` — extensions `x3d`, `x3dz`, `x3dv`, `x3dvz`
 ///   (encoding and compression are sniffed from the bytes);
 /// * encoder `"x3d"` — extension `x3d` (XML);
-/// * encoder `"x3dz"` — extension `x3dz` (gzip-compressed XML).
+/// * encoder `"x3dz"` — extension `x3dz` (gzip-compressed XML);
+/// * encoders `"x3dv"` / `"x3dvz"` — ClassicVRML, plain / gzip.
 #[cfg(feature = "registry")]
 pub fn register(registry: &mut oxideav_mesh3d::Mesh3DRegistry) {
     registry.register_decoder(
@@ -74,6 +77,16 @@ pub fn register(registry: &mut oxideav_mesh3d::Mesh3DRegistry) {
         "x3dz",
         &["x3dz"],
         Box::new(|| Box::new(X3dEncoder::new().with_gzip(true))),
+    );
+    registry.register_encoder(
+        "x3dv",
+        &["x3dv"],
+        Box::new(|| Box::new(X3dEncoder::new().with_classic(true))),
+    );
+    registry.register_encoder(
+        "x3dvz",
+        &["x3dvz"],
+        Box::new(|| Box::new(X3dEncoder::new().with_classic(true).with_gzip(true))),
     );
 }
 
@@ -163,8 +176,9 @@ pub fn parse_document_with_limits(bytes: &[u8], limits: &Limits) -> Result<X3dDo
         .next();
     match first {
         Some('<') => xml_reader::read_xml(&text, limits),
-        Some(_) => Err(Error::unsupported(
-            "ClassicVRML encoding is not supported yet",
+        Some('#') if classic::looks_classic(&text) => classic::read_classic(&text, limits),
+        Some(_) => Err(Error::invalid(
+            "neither an XML (<X3D>) nor a ClassicVRML (#X3D) document",
         )),
         None => Err(Error::invalid("empty input")),
     }

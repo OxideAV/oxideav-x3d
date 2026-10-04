@@ -24,7 +24,7 @@ default = ["registry"]
 # conversion and the `Mesh3DDecoder` / `Mesh3DEncoder` trait impls all
 # stay available (the traits come from `oxideav-mesh3d`, which follows
 # the same standalone-friendly pattern).
-registry = ["dep:oxideav-core", "oxideav-mesh3d/registry"]
+registry = ["dep:oxideav-core", "oxideav-mesh3d/registry", "oxideav-vrml/registry"]
 
 [dependencies]
 # Optional under the `registry` feature so consumers can use the parser
@@ -36,6 +36,11 @@ oxideav-mesh3d = { version = "0.0", default-features = false }
 # `extras: HashMap<String, serde_json::Value>` side-channel (metadata
 # nodes, X3D-only fields such as Switch/LOD/Billboard parameters).
 serde_json = "1"
+# Shared VRML-syntax layer (lexer / typed parser / writer / AST) in its
+# X3D ClassicVRML dialect — `.x3dv` reuses it instead of duplicating a
+# VRML grammar implementation. Its `registry` feature follows ours (it
+# must track oxideav-mesh3d's, which ours enables).
+oxideav-vrml = { version = "0.0", default-features = false }
 # Workspace compression provider: gzip for `.x3dz` / `.x3dvz`, zlib for
 # the minimal PNG writer that materialises `PixelTexture` images.
 compcol = { version = "0.6", default-features = false, features = ["gzip", "zlib"] }

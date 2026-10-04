@@ -48,6 +48,7 @@ use crate::nodes;
 #[derive(Clone, Debug, Default)]
 pub struct X3dEncoder {
     gzip: bool,
+    classic: bool,
 }
 
 impl X3dEncoder {
@@ -62,10 +63,20 @@ impl X3dEncoder {
         self
     }
 
+    /// Write the ClassicVRML encoding (`.x3dv`) instead of XML.
+    pub fn with_classic(mut self, classic: bool) -> Self {
+        self.classic = classic;
+        self
+    }
+
     /// Encode, reporting the crate-local error type.
     pub fn encode_scene(&self, scene: &Scene3D) -> crate::Result<Vec<u8>> {
         let doc = scene_to_document(scene);
-        let text = crate::write_xml(&doc).into_bytes();
+        let text = if self.classic {
+            crate::write_classic(&doc).into_bytes()
+        } else {
+            crate::write_xml(&doc).into_bytes()
+        };
         if self.gzip {
             crate::gzip(&text)
         } else {

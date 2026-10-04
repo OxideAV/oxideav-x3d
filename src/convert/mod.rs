@@ -111,6 +111,7 @@ pub fn document_to_scene(doc: &X3dDocument, opts: &ConvertOptions) -> Result<Sce
         humanoids: Vec::new(),
         animated: animation::animated_targets(&doc, &routes),
         pivots: HashMap::new(),
+        pending: None,
         out_nodes: 0,
         depth: 0,
     };
@@ -149,8 +150,24 @@ pub(crate) struct Conv<'a> {
     animated: HashSet<NodeIdx>,
     /// Outer node → (inner pivot node, centre) for split transforms.
     pub(crate) pivots: HashMap<NodeId, (NodeId, [f32; 3])>,
+    pending: Option<Box<Plan>>,
     out_nodes: usize,
     depth: usize,
+}
+
+/// Deferred children of a grouping node (see `Conv::prepare`).
+struct Plan {
+    node: Box<Node>,
+    pivot: Option<(Box<Node>, [f32; 3])>,
+    kids: Vec<NodeIdx>,
+    humanoid: bool,
+}
+
+fn kids_of(n: &X3dNode, fields: &[&str]) -> Vec<NodeIdx> {
+    fields
+        .iter()
+        .flat_map(|f| n.children_of(f).iter().copied())
+        .collect()
 }
 
 fn tuple3(n: &X3dNode, name: &str, d: [f32; 3]) -> [f32; 3] {
@@ -275,16 +292,6 @@ impl Conv<'_> {
         id
     }
 
-    fn visit_children(&mut self, n: &X3dNode, fields: &[&str]) -> Result<Vec<NodeId>> {
-        let mut out = Vec::new();
-        for f in fields {
-            for &c in n.children_of(f) {
-                out.extend(self.visit(c)?);
-            }
-        }
-        Ok(out)
-    }
-
     /// Transform of an X3D Transform-like node:
     /// `T × C × R × SR × S × −SR × −C`. Without a non-uniform
     /// `scaleOrientation` this is exactly the TRS
@@ -320,19 +327,21 @@ impl Conv<'_> {
     /// animation target) and an inner pivot node translating by `−C`
     /// that holds the children, so translation / rotation / scale
     /// channels stay exact.
-    fn transform_node(
+    fn transform_plan(
         &mut self,
         idx: NodeIdx,
         n: &X3dNode,
         mut node: Node,
         child_fields: &[&str],
-    ) -> Result<NodeId> {
+        humanoid: bool,
+    ) {
         let c = tuple3(n, "center", [0.0; 3]);
         let mut so = tuple4(n, "scaleOrientation", [0.0, 0.0, 1.0, 0.0]);
         so[3] *= self.angle;
         let s = tuple3(n, "scale", [1.0; 3]);
         let simple_so = so[3] == 0.0 || (s[0] == s[1] && s[1] == s[2]);
-        if self.animated.contains(&idx) && c != [0.0; 3] && simple_so {
+        let kids = kids_of(n, child_fields);
+        let pivot = if self.animated.contains(&idx) && c != [0.0; 3] && simple_so {
             let t = tuple3(n, "translation", [0.0; 3]);
             let mut r = tuple4(n, "rotation", [0.0, 0.0, 1.0, 0.0]);
             r[3] *= self.angle;
@@ -341,7 +350,6 @@ impl Conv<'_> {
                 rotation: quat_from_axis_angle(r),
                 scale: s,
             };
-            let kids = self.visit_children(n, child_fields)?;
             let mut pivot = Node::new();
             pivot.name = n.def.as_ref().map(|d| format!("{d}:pivot"));
             pivot.transform = Transform::Trs {
@@ -349,22 +357,30 @@ impl Conv<'_> {
                 rotation: [0.0, 0.0, 0.0, 1.0],
                 scale: [1.0; 3],
             };
-            pivot.children = kids;
             pivot.extras.insert("x3d:pivot".into(), json!(c));
-            let pid = self.scene.add_node(pivot);
-            node.children = vec![pid];
-            node.extras.insert("x3d:center".into(), json!(c));
-            let id = self.push(idx, node);
-            self.pivots.insert(id, (pid, c));
-            Ok(id)
+            Some((Box::new(pivot), c))
         } else {
             node.transform = self.x3d_transform(n);
-            node.children = self.visit_children(n, child_fields)?;
-            if c != [0.0; 3] {
-                node.extras.insert("x3d:center".into(), json!(c));
-            }
-            Ok(self.push(idx, node))
+            None
+        };
+        if c != [0.0; 3] {
+            node.extras.insert("x3d:center".into(), json!(c));
         }
+        self.pending = Some(Box::new(Plan {
+            node: Box::new(node),
+            pivot,
+            kids,
+            humanoid,
+        }));
+    }
+
+    fn plan(&mut self, node: Node, kids: Vec<NodeIdx>) {
+        self.pending = Some(Box::new(Plan {
+            node: Box::new(node),
+            pivot: None,
+            kids,
+            humanoid: false,
+        }));
     }
 
     /// Convert one X3D node; returns the mesh3d nodes to attach to the
@@ -396,6 +412,46 @@ impl Conv<'_> {
     }
 
     fn visit_inner(&mut self, idx: NodeIdx, n: &X3dNode) -> Result<Vec<NodeId>> {
+        let out = self.prepare(idx, n)?;
+        match self.pending.take() {
+            None => Ok(out),
+            Some(plan) => self.finish_plan(idx, *plan),
+        }
+    }
+
+    /// Second half of a grouping node: convert its children (the only
+    /// recursive step — kept in a small stack frame) and attach them.
+    fn finish_plan(&mut self, idx: NodeIdx, plan: Plan) -> Result<Vec<NodeId>> {
+        let mut children = Vec::new();
+        for k in plan.kids {
+            children.extend(self.visit(k)?);
+        }
+        let mut node = *plan.node;
+        let id = match plan.pivot {
+            Some((mut pivot, c)) => {
+                pivot.children = children;
+                let pid = self.scene.add_node(*pivot);
+                node.children = vec![pid];
+                let id = self.push(idx, node);
+                self.pivots.insert(id, (pid, c));
+                id
+            }
+            None => {
+                node.children = children;
+                self.push(idx, node)
+            }
+        };
+        if plan.humanoid {
+            self.humanoids.push((idx, id));
+        }
+        Ok(vec![id])
+    }
+
+    /// Non-recursive part of a node conversion. Grouping nodes leave a
+    /// [`Plan`] in `self.pending` instead of recursing here, so the
+    /// (large) frame of this function is never on the recursion path.
+    #[inline(never)]
+    fn prepare(&mut self, idx: NodeIdx, n: &X3dNode) -> Result<Vec<NodeId>> {
         let t = n.type_name.as_str();
         match t {
             "Transform" | "HAnimJoint" | "HAnimSite" | "CADPart" | "EspduTransform" => {
@@ -408,7 +464,8 @@ impl Conv<'_> {
                         }
                     }
                 }
-                Ok(vec![self.transform_node(idx, n, node, &["children"])?])
+                self.transform_plan(idx, n, node, &["children"], false);
+                Ok(Vec::new())
             }
             "HAnimHumanoid" => {
                 let mut node = self.new_node(idx, n)?;
@@ -421,9 +478,8 @@ impl Conv<'_> {
                 {
                     node.extras.insert("x3d:hanimVersion".into(), json!(v));
                 }
-                let id = self.transform_node(idx, n, node, &["skeleton", "skin", "viewpoints"])?;
-                self.humanoids.push((idx, id));
-                Ok(vec![id])
+                self.transform_plan(idx, n, node, &["skeleton", "skin", "viewpoints"], true);
+                Ok(Vec::new())
             }
             "Group"
             | "StaticGroup"
@@ -473,8 +529,8 @@ impl Conv<'_> {
                     "LayerSet" => &["layers"],
                     _ => &["children"],
                 };
-                node.children = self.visit_children(n, fields)?;
-                Ok(vec![self.push(idx, node)])
+                self.plan(node, kids_of(n, fields));
+                Ok(Vec::new())
             }
             "Switch" => {
                 let mut node = self.new_node(idx, n)?;
@@ -491,12 +547,13 @@ impl Conv<'_> {
                     "x3d:switch".into(),
                     json!({"whichChoice": which, "choices": kids.len()}),
                 );
-                if which >= 0 {
-                    if let Some(&c) = kids.get(which as usize) {
-                        node.children = self.visit(c)?;
-                    }
-                }
-                Ok(vec![self.push(idx, node)])
+                let chosen = if which >= 0 {
+                    kids.get(which as usize).copied().into_iter().collect()
+                } else {
+                    Vec::new()
+                };
+                self.plan(node, chosen);
+                Ok(Vec::new())
             }
             "LOD" => {
                 let mut node = self.new_node(idx, n)?;
@@ -510,10 +567,8 @@ impl Conv<'_> {
                     "x3d:lod".into(),
                     json!({"center": tuple3(n, "center", [0.0; 3]), "range": range, "levels": kids.len()}),
                 );
-                if let Some(&c) = kids.first() {
-                    node.children = self.visit(c)?;
-                }
-                Ok(vec![self.push(idx, node)])
+                self.plan(node, kids.first().copied().into_iter().collect());
+                Ok(Vec::new())
             }
             "Inline" => {
                 let mut node = self.new_node(idx, n)?;
