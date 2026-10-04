@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<X3D profile='Interchange' version='4.0'>
+  <Scene>
+    <Transform DEF='PBR'>
+      <Shape>
+        <Appearance DEF='PbrApp' alphaMode='MASK' alphaCutoff='0.3'>
+          <PhysicalMaterial baseColor='0.5 0.6 0.7' metallic='0.25' roughness='0.75' emissiveColor='0.1 0 0' transparency='0.2' normalScale='0.5' occlusionStrength='0.8'>
+            <ImageTexture containerField='baseTexture' DEF='BaseTex' url='"textures/base.png" "https://example.com/base.png"' repeatS='false'/>
+            <ImageTexture containerField='normalTexture' url='"normal.jpg"'>
+              <TextureProperties boundaryModeS='MIRRORED_REPEAT' magnificationFilter='NEAREST_PIXEL' minificationFilter='AVG_PIXEL_AVG_MIPMAP'/>
+            </ImageTexture>
+            <ImageTexture containerField='metallicRoughnessTexture' url='"mr.png"'/>
+            <ImageTexture containerField='occlusionTexture' url='"ao.png"'/>
+            <ImageTexture containerField='emissiveTexture' url='"em.png"'/>
+          </PhysicalMaterial>
+        </Appearance>
+        <Box/>
+      </Shape>
+    </Transform>
+    <Transform DEF='Phong'>
+      <Shape>
+        <Appearance>
+          <Material diffuseColor='0.2 0.4 0.6' shininess='0.8' specularColor='1 1 1' transparency='0.5'/>
+          <PixelTexture image='2 2 4 0xFF0000FF 0x00FF00FF 0x0000FFFF 0xFFFFFF80'/>
+          <TextureTransform scale='2 2'/>
+        </Appearance>
+        <IndexedFaceSet coordIndex='0 1 2 3'>
+          <Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/>
+          <TextureCoordinate point='0 0, 1 0, 1 1, 0 1'/>
+        </IndexedFaceSet>
+      </Shape>
+    </Transform>
+    <Transform DEF='Unlit'>
+      <Shape>
+        <Appearance><UnlitMaterial emissiveColor='0 1 0'/>
+          <ImageTexture url='"data:image/png;base64,iVBORw0KGgo="'/>
+        </Appearance>
+        <Sphere/>
+      </Shape>
+    </Transform>
+    <Transform DEF='NoApp'><Shape><Cone/></Shape></Transform>
+    <Transform DEF='TwoSided'>
+      <Shape><Appearance><TwoSidedMaterial diffuseColor='1 0 1'/></Appearance><Cylinder/></Shape>
+    </Transform>
+    <Transform DEF='Reuse'>
+      <Shape><Appearance USE='PbrApp'/><Box size='1 1 1'/></Shape>
+    </Transform>
+  </Scene>
+</X3D>

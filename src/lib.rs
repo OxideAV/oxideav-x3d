@@ -36,6 +36,8 @@
 #![deny(missing_docs)]
 #![forbid(unsafe_code)]
 
+pub mod convert;
+pub mod decoder;
 pub mod document;
 pub mod error;
 pub mod field;
@@ -44,10 +46,24 @@ pub mod xml;
 pub mod xml_reader;
 pub mod xml_writer;
 
+pub use convert::{document_to_scene, ConvertOptions};
+pub use decoder::X3dDecoder;
 pub use document::{NodeIdx, X3dDocument, X3dNode};
 pub use error::{Error, Result};
 pub use field::{AccessType, FieldData, FieldType, FieldValue};
 pub use xml_writer::write_xml;
+
+/// Register the X3D decoder with a
+/// [`Mesh3DRegistry`](oxideav_mesh3d::Mesh3DRegistry) under the format
+/// id `"x3d"` (extensions `x3d`, `x3dz`, `x3dv`, `x3dvz`).
+#[cfg(feature = "registry")]
+pub fn register(registry: &mut oxideav_mesh3d::Mesh3DRegistry) {
+    registry.register_decoder(
+        "x3d",
+        &["x3d", "x3dz", "x3dv", "x3dvz"],
+        Box::new(|| Box::new(X3dDecoder::new())),
+    );
+}
 
 /// Hostile-input bounds applied while reading.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]

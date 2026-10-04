@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<X3D profile='Interactive' version='4.0'>
+  <Scene>
+    <Transform DEF='Mover'>
+      <Shape><Box/></Shape>
+    </Transform>
+    <Transform DEF='Spinner'>
+      <Shape><Sphere/></Shape>
+    </Transform>
+    <Shape DEF='Morphing'>
+      <IndexedFaceSet coordIndex='0 1 2'>
+        <Coordinate DEF='MorphCoord' point='0 0 0, 1 0 0, 0 1 0'/>
+      </IndexedFaceSet>
+    </Shape>
+    <TimeSensor DEF='Clock' cycleInterval='4' loop='true'/>
+    <PositionInterpolator DEF='PI' key='0 0.5 1' keyValue='0 0 0, 0 2 0, 0 0 0'/>
+    <OrientationInterpolator DEF='OI' key='0 0.5 1' keyValue='0 1 0 0, 0 1 0 3.14159, 0 1 0 6.28318'/>
+    <PositionInterpolator DEF='SI' key='0 1' keyValue='1 1 1, 2 2 2'/>
+    <CoordinateInterpolator DEF='CI' key='0 1' keyValue='0 0 0, 1 0 0, 0 1 0, 0 0 1, 1 0 1, 0 1 1'/>
+    <ROUTE fromNode='Clock' fromField='fraction_changed' toNode='PI' toField='set_fraction'/>
+    <ROUTE fromNode='Clock' fromField='fraction_changed' toNode='OI' toField='set_fraction'/>
+    <ROUTE fromNode='Clock' fromField='fraction_changed' toNode='SI' toField='set_fraction'/>
+    <ROUTE fromNode='Clock' fromField='fraction_changed' toNode='CI' toField='set_fraction'/>
+    <ROUTE fromNode='PI' fromField='value_changed' toNode='Mover' toField='set_translation'/>
+    <ROUTE fromNode='SI' fromField='value_changed' toNode='Mover' toField='scale'/>
+    <ROUTE fromNode='OI' fromField='value_changed' toNode='Spinner' toField='set_rotation'/>
+    <ROUTE fromNode='CI' fromField='value_changed' toNode='MorphCoord' toField='set_point'/>
+    <TouchSensor DEF='Touch'/>
+    <ROUTE fromNode='Touch' fromField='touchTime' toNode='Clock' toField='startTime'/>
+  </Scene>
+</X3D>
