@@ -5,7 +5,7 @@
 //! metre convention). Each converted X3D node keeps its `DEF` name as
 //! the mesh3d node name; `USE` of a grouping node instantiates the
 //! subtree again (mesh3d graphs are trees), while `USE` of a Shape
-//! reuses the converted [`Mesh`](oxideav_mesh3d::Mesh).
+//! reuses the converted [`Mesh`].
 //!
 //! What maps where:
 //!

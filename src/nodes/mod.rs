@@ -6,7 +6,7 @@
 //! Object Model (`X3dUnifiedObjectModel-4.0.xml`, mirrored in the
 //! OxideAV docs repository under `3d/x3d/schema/`). Defaults are kept
 //! as their XML-encoding attribute text and parsed on demand with
-//! [`parse_xml_value`](crate::field::parse_xml_value).
+//! [`parse_xml_value`].
 
 #[rustfmt::skip]
 mod generated;
