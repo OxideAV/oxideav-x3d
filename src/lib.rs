@@ -30,7 +30,7 @@
 //! oxideav-x3d = { version = "0.0", default-features = false }
 //! ```
 //!
-//! drops `oxideav-core` and the [`register`] helper; everything else
+//! drops `oxideav-core` and the `register` helper; everything else
 //! stays available.
 
 #![deny(missing_docs)]
