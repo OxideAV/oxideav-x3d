@@ -1,0 +1,15 @@
+[package]
+name = "oxideav-x3d"
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.80"
+license = "MIT"
+authors = ["Mark Karpeles"]
+description = "Pure-Rust X3D (ISO/IEC 19775-1; XML and ClassicVRML encodings) reader/writer — implements oxideav-mesh3d's Decoder/Encoder traits"
+repository = "https://github.com/OxideAV/oxideav-x3d"
+homepage = "https://github.com/OxideAV/oxideav-x3d"
+readme = "README.md"
+keywords = ["x3d", "vrml", "3d", "mesh", "iso-19775"]
+categories = ["multimedia", "rendering::data-formats", "parser-implementations"]
+
+[dependencies]
