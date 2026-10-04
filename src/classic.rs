@@ -471,9 +471,22 @@ pub fn write_classic(doc: &X3dDocument) -> String {
             }
         }
     }
+    // DEF names must be ClassicVRML identifiers; XML allows more.
+    let mut used: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut safe_def = |d: &str| -> String {
+        let base = crate::encoder::sanitise(d);
+        let mut cand = base.clone();
+        let mut k = 1;
+        while used.contains(&cand) && cand != d {
+            k += 1;
+            cand = format!("{base}_{k}");
+        }
+        used.insert(cand.clone());
+        cand
+    };
     for n in &doc.nodes {
         let mut vn = v::Node::new(n.type_name.clone());
-        vn.def_name = n.def.clone();
+        vn.def_name = n.def.as_deref().map(&mut safe_def);
         vn.origin = match n.kind {
             NodeKind::Builtin => v::NodeOrigin::Builtin,
             NodeKind::ProtoInstance { proto: Some(p) } => {

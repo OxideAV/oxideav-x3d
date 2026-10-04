@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<X3D profile='Immersive' version='4.0'>
+  <Scene>
+    <Transform DEF='BoxT' translation='0 0 0'>
+      <Shape DEF='BoxShape'><Appearance><Material diffuseColor='1 0 0'/></Appearance><Box size='2 4 6'/></Shape>
+    </Transform>
+    <Transform DEF='SphereT' translation='3 0 0'>
+      <Shape><Appearance><Material/></Appearance><Sphere radius='0.5'/></Shape>
+    </Transform>
+    <Transform DEF='ConeT' translation='6 0 0'>
+      <Shape><Cone bottomRadius='1' height='2'/></Shape>
+    </Transform>
+    <Transform DEF='CylT' translation='9 0 0'>
+      <Shape><Cylinder radius='1' height='3'/></Shape>
+    </Transform>
+    <Transform DEF='IfsT' translation='0 5 0'>
+      <!-- unit cube as an IndexedFaceSet, CCW from outside -->
+      <Shape DEF='Cube'>
+        <IndexedFaceSet coordIndex='0 1 2 3 -1 4 7 6 5 -1 0 4 5 1 -1 1 5 6 2 -1 2 6 7 3 -1 3 7 4 0'>
+          <Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0, 0 0 -1, 1 0 -1, 1 1 -1, 0 1 -1'/>
+        </IndexedFaceSet>
+      </Shape>
+    </Transform>
+    <Transform DEF='ConcaveT' translation='3 5 0'>
+      <Shape>
+        <IndexedFaceSet convex='false' solid='false' coordIndex='0 1 2 3 4 5 -1' colorPerVertex='false'>
+          <Coordinate point='0 0 0, 2 0 0, 2 1 0, 1 1 0, 1 2 0, 0 2 0'/>
+          <Color color='0 1 0'/>
+        </IndexedFaceSet>
+      </Shape>
+    </Transform>
+    <Transform DEF='CcwFalseT' translation='6 5 0'>
+      <Shape>
+        <IndexedFaceSet ccw='false' coordIndex='0 3 2 1' creaseAngle='1'>
+          <Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/>
+        </IndexedFaceSet>
+      </Shape>
+    </Transform>
+    <Transform DEF='ItsT' translation='0 10 0'>
+      <Shape>
+        <IndexedTriangleSet index='0 1 2 0 2 3'>
+          <Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/>
+          <Normal vector='0 0 1, 0 0 1, 0 0 1, 0 0 1'/>
+          <TextureCoordinate point='0 0, 1 0, 1 1, 0 1'/>
+          <ColorRGBA color='1 0 0 1, 0 1 0 1, 0 0 1 1, 1 1 1 0.5'/>
+        </IndexedTriangleSet>
+      </Shape>
+    </Transform>
+    <Transform DEF='TsT' translation='3 10 0'>
+      <Shape><TriangleSet><Coordinate point='0 0 0, 1 0 0, 0 1 0'/></TriangleSet></Shape>
+    </Transform>
+    <Transform DEF='StripT' translation='6 10 0'>
+      <Shape><TriangleStripSet stripCount='5'><Coordinate point='0 0 0, 1 0 0, 0 1 0, 1 1 0, 0 2 0'/></TriangleStripSet></Shape>
+    </Transform>
+    <Transform DEF='IStripT' translation='9 10 0'>
+      <Shape><IndexedTriangleStripSet index='0 1 2 3 4 -1'><Coordinate point='0 0 0, 1 0 0, 0 1 0, 1 1 0, 0 2 0'/></IndexedTriangleStripSet></Shape>
+    </Transform>
+    <Transform DEF='FanT' translation='12 10 0'>
+      <Shape><TriangleFanSet fanCount='4'><Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/></TriangleFanSet></Shape>
+    </Transform>
+    <Transform DEF='IFanT' translation='15 10 0'>
+      <Shape><IndexedTriangleFanSet index='0 1 2 3'><Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/></IndexedTriangleFanSet></Shape>
+    </Transform>
+    <Transform DEF='QuadT' translation='18 10 0'>
+      <Shape><QuadSet><Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/></QuadSet></Shape>
+    </Transform>
+    <Transform DEF='IQuadT' translation='21 10 0'>
+      <Shape><IndexedQuadSet index='0 1 2 3'><Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/></IndexedQuadSet></Shape>
+    </Transform>
+    <Transform DEF='EgT' translation='0 15 0'>
+      <Shape><ElevationGrid xDimension='3' zDimension='3' xSpacing='1' zSpacing='1' height='0 0.5 0 0.5 1 0.5 0 0.5 0' creaseAngle='0.8'/></Shape>
+    </Transform>
+    <Transform DEF='ExtT' translation='5 15 0'>
+      <Shape><Extrusion/></Shape>
+    </Transform>
+    <Transform DEF='ExtBentT' translation='8 15 0'>
+      <Shape><Extrusion crossSection='1 0, 0.7 -0.7, 0 -1, -0.7 -0.7, -1 0, -0.7 0.7, 0 1, 0.7 0.7, 1 0' spine='0 0 0, 0 1 0, 1 2 0, 2 2 0' scale='1 1, 0.8 0.8, 0.6 0.6, 0.5 0.5' creaseAngle='1.2'/></Shape>
+    </Transform>
+    <Transform DEF='LinesT' translation='0 20 0'>
+      <Shape>
+        <Appearance><Material emissiveColor='1 1 0'/></Appearance>
+        <IndexedLineSet coordIndex='0 1 2 -1 2 3'><Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/></IndexedLineSet>
+      </Shape>
+    </Transform>
+    <Transform DEF='LineSetT' translation='3 20 0'>
+      <Shape><LineSet vertexCount='2 2'><Coordinate point='0 0 0, 1 0 0, 1 1 0, 0 1 0'/><Color color='1 0 0, 0 1 0, 0 0 1, 1 1 1'/></LineSet></Shape>
+    </Transform>
+    <Transform DEF='PointsT' translation='6 20 0'>
+      <Shape><PointSet><Coordinate point='0 0 0, 1 0 0, 1 1 0'/></PointSet></Shape>
+    </Transform>
+    <Transform DEF='TwoDT' translation='0 25 0'>
+      <Shape><Rectangle2D size='2 1'/></Shape>
+      <Shape><Disk2D innerRadius='0.5' outerRadius='1'/></Shape>
+      <Shape><Circle2D radius='1'/></Shape>
+      <Shape><Arc2D radius='1' startAngle='0' endAngle='1.5'/></Shape>
+      <Shape><ArcClose2D radius='1' closureType='PIE'/></Shape>
+      <Shape><Polyline2D lineSegments='0 0, 1 1, 2 0'/></Shape>
+      <Shape><Polypoint2D point='0 0, 1 1'/></Shape>
+      <Shape><TriangleSet2D vertices='0 0, 1 0, 0 1'/></Shape>
+    </Transform>
+    <Transform DEF='Shared1' translation='0 30 0'><Shape USE='BoxShape'/></Transform>
+  </Scene>
+</X3D>

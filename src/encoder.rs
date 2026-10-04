@@ -184,19 +184,21 @@ struct Enc<'s> {
     visiting: HashSet<NodeId>,
 }
 
-/// Make `name` a valid, unique DEF (XML NCName-ish).
-fn sanitise(name: &str) -> String {
+/// Make `name` a valid DEF in both encodings: an XML NCName that is
+/// also a ClassicVRML identifier (no `.`, which separates node and
+/// field in ROUTEs).
+pub(crate) fn sanitise(name: &str) -> String {
     let mut s: String = name
         .chars()
         .map(|c| {
-            if c.is_alphanumeric() || c == '_' || c == '-' || c == '.' {
+            if c.is_alphanumeric() || c == '_' || c == '-' {
                 c
             } else {
                 '_'
             }
         })
         .collect();
-    if s.is_empty() || s.starts_with(|c: char| c.is_ascii_digit() || c == '-' || c == '.') {
+    if s.is_empty() || s.starts_with(|c: char| c.is_ascii_digit() || c == '-') {
         s.insert(0, '_');
     }
     s

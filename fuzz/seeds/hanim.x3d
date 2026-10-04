@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<X3D profile='Full' version='4.0'>
+  <head><component name='HAnim' level='1'/></head>
+  <Scene>
+    <HAnimHumanoid DEF='Hu' name='humanoid' version='2.0'>
+      <HAnimJoint DEF='hu_root' name='humanoid_root' containerField='skeleton'
+          skinCoordIndex='0 1 2 3' skinCoordWeight='1'>
+        <HAnimJoint DEF='hu_arm' name='l_shoulder' center='0 1 0' translation='0 1 0'
+            skinCoordIndex='2 3' skinCoordWeight='0.5 0.5'/>
+      </HAnimJoint>
+      <HAnimJoint USE='hu_root' containerField='joints'/>
+      <HAnimJoint USE='hu_arm' containerField='joints'/>
+      <Coordinate DEF='SkinCoord' containerField='skinCoord' point='0 0 0, 1 0 0, 1 2 0, 0 2 0, 5 5 5'/>
+      <Shape containerField='skin'>
+        <IndexedFaceSet coordIndex='0 1 2 3 -1 0 1 4'>
+          <Coordinate USE='SkinCoord'/>
+        </IndexedFaceSet>
+      </Shape>
+    </HAnimHumanoid>
+    <TimeSensor DEF='T' cycleInterval='2' loop='true'/>
+    <OrientationInterpolator DEF='Wave' key='0 1' keyValue='0 0 1 0, 0 0 1 1'/>
+    <ROUTE fromNode='T' fromField='fraction_changed' toNode='Wave' toField='set_fraction'/>
+    <ROUTE fromNode='Wave' fromField='value_changed' toNode='hu_arm' toField='set_rotation'/>
+  </Scene>
+</X3D>

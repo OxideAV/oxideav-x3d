@@ -1,0 +1,38 @@
+#X3D V4.0 utf8
+PROFILE Interchange
+COMPONENT HAnim:1
+UNIT length centimetres 0.01
+META "title" "classic_features.x3dv"
+
+PROTO ColoredBox [
+  inputOutput SFColor boxColor 1 0 0
+  initializeOnly SFVec3f boxSize 2 2 2
+] {
+  Shape {
+    appearance Appearance { material Material { diffuseColor IS boxColor } }
+    geometry Box { size IS boxSize }
+  }
+}
+
+DEF T Transform {
+  translation 1 2 3
+  children [
+    DEF CB ColoredBox { boxColor 0 0 1 }
+    DEF S Shape {
+      appearance Appearance {
+        material PhysicalMaterial { baseColor 0.5 0.5 0.5 metallic 0.2 roughness 0.7 }
+      }
+      geometry IndexedFaceSet {
+        coordIndex [ 0 1 2 3 -1 ]
+        coord Coordinate { point [ 0 0 0, 1 0 0, 1 1 0, 0 1 0 ] }
+        texCoord TextureCoordinate { point [ 0 0, 1 0, 1 1, 0 1 ] }
+      }
+    }
+  ]
+}
+Transform { translation -1 0 0 children USE S }
+WorldInfo { title "Classic" info [ "a" "b \"quoted\"" ] }
+DEF Clock TimeSensor { cycleInterval 4 loop TRUE }
+DEF Mover PositionInterpolator { key [ 0 1 ] keyValue [ 0 0 0, 0 1 0 ] }
+ROUTE Clock.fraction_changed TO Mover.set_fraction
+ROUTE Mover.value_changed TO T.set_translation
