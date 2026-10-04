@@ -305,6 +305,17 @@ fn triangulate(pts: &[[f32; 3]], convex: bool) -> Vec<[usize; 3]> {
     out
 }
 
+/// Supplied normal: kept verbatim when already unit length (so
+/// round trips are bit-stable), normalised otherwise.
+fn unit(n: [f32; 3]) -> [f32; 3] {
+    let l = len(n);
+    if (l - 1.0).abs() < 1e-4 {
+        n
+    } else {
+        normalize(n).unwrap_or([0.0, 1.0, 0.0])
+    }
+}
+
 fn bits3(v: [f32; 3]) -> [u32; 3] {
     [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()]
 }
@@ -631,7 +642,7 @@ fn indexed_face_set(
                     .get(i.max(0) as usize)
                     .copied()
                     .unwrap_or([0.0, 1.0, 0.0]);
-                out.push(normalize(n).unwrap_or([0.0, 1.0, 0.0]));
+                out.push(unit(n));
             }
             if let (Some(out), Some(src)) = (ccol.as_mut(), cols.as_ref()) {
                 let i = if color_per_vertex {
@@ -777,10 +788,7 @@ fn triangle_family(
             soup.corner_pos.push(ci);
             if let (Some(out), Some(src)) = (cnorm.as_mut(), nors.as_ref()) {
                 let i = if normal_per_vertex { ci as usize } else { fi };
-                out.push(
-                    normalize(src.get(i).copied().unwrap_or([0.0, 1.0, 0.0]))
-                        .unwrap_or([0.0, 1.0, 0.0]),
-                );
+                out.push(unit(src.get(i).copied().unwrap_or([0.0, 1.0, 0.0])));
             }
             if let (Some(out), Some(src)) = (ccol.as_mut(), cols.as_ref()) {
                 out.push(src.get(ci as usize).copied().unwrap_or([1.0; 4]));
@@ -850,10 +858,7 @@ fn elevation_grid(
                     soup.corner_pos.push(v as u32);
                     if let (Some(out), Some(src)) = (cnorm.as_mut(), nors.as_ref()) {
                         let k = if npv { v } else { quad };
-                        out.push(
-                            normalize(src.get(k).copied().unwrap_or([0.0, 1.0, 0.0]))
-                                .unwrap_or([0.0, 1.0, 0.0]),
-                        );
+                        out.push(unit(src.get(k).copied().unwrap_or([0.0, 1.0, 0.0])));
                     }
                     if let (Some(out), Some(src)) = (ccol.as_mut(), cols.as_ref()) {
                         let k = if cpv { v } else { quad };

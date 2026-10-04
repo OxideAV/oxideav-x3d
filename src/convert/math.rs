@@ -64,7 +64,6 @@ pub fn quat_from_axis_angle(r: [f32; 4]) -> [f32; 4] {
 }
 
 /// Axis-angle `[x, y, z, angle]` from a quaternion (xyzw).
-#[allow(dead_code)] // used by the encoder
 pub fn axis_angle_from_quat(q: [f32; 4]) -> [f32; 4] {
     let n = (q[0] * q[0] + q[1] * q[1] + q[2] * q[2] + q[3] * q[3]).sqrt();
     if !(n.is_finite() && n > 0.0) {
@@ -76,11 +75,10 @@ pub fn axis_angle_from_quat(q: [f32; 4]) -> [f32; 4] {
     }
     let w = q[3].clamp(-1.0, 1.0);
     let angle = 2.0 * w.acos();
-    let s = (1.0 - w * w).sqrt();
-    if s < 1e-7 {
-        return [0.0, 0.0, 1.0, 0.0];
+    match normalize([q[0], q[1], q[2]]) {
+        Some(a) if angle.abs() > 1e-7 => [a[0], a[1], a[2], angle],
+        _ => [0.0, 0.0, 1.0, 0.0],
     }
-    [q[0] / s, q[1] / s, q[2] / s, angle]
 }
 
 pub fn quat_mul(a: [f32; 4], b: [f32; 4]) -> [f32; 4] {

@@ -39,6 +39,7 @@
 pub mod convert;
 pub mod decoder;
 pub mod document;
+pub mod encoder;
 pub mod error;
 pub mod field;
 pub mod nodes;
@@ -49,19 +50,30 @@ pub mod xml_writer;
 pub use convert::{document_to_scene, ConvertOptions};
 pub use decoder::X3dDecoder;
 pub use document::{NodeIdx, X3dDocument, X3dNode};
+pub use encoder::{scene_to_document, X3dEncoder};
 pub use error::{Error, Result};
 pub use field::{AccessType, FieldData, FieldType, FieldValue};
 pub use xml_writer::write_xml;
 
-/// Register the X3D decoder with a
-/// [`Mesh3DRegistry`](oxideav_mesh3d::Mesh3DRegistry) under the format
-/// id `"x3d"` (extensions `x3d`, `x3dz`, `x3dv`, `x3dvz`).
+/// Register the X3D decoder and encoders with a
+/// [`Mesh3DRegistry`](oxideav_mesh3d::Mesh3DRegistry).
+///
+/// * decoder `"x3d"` — extensions `x3d`, `x3dz`, `x3dv`, `x3dvz`
+///   (encoding and compression are sniffed from the bytes);
+/// * encoder `"x3d"` — extension `x3d` (XML);
+/// * encoder `"x3dz"` — extension `x3dz` (gzip-compressed XML).
 #[cfg(feature = "registry")]
 pub fn register(registry: &mut oxideav_mesh3d::Mesh3DRegistry) {
     registry.register_decoder(
         "x3d",
         &["x3d", "x3dz", "x3dv", "x3dvz"],
         Box::new(|| Box::new(X3dDecoder::new())),
+    );
+    registry.register_encoder("x3d", &["x3d"], Box::new(|| Box::new(X3dEncoder::new())));
+    registry.register_encoder(
+        "x3dz",
+        &["x3dz"],
+        Box::new(|| Box::new(X3dEncoder::new().with_gzip(true))),
     );
 }
 
