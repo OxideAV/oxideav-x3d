@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 4.0//EN" "https://www.web3d.org/specifications/x3d-4.0.dtd">
+<X3D profile='Immersive' version='4.0' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='https://www.web3d.org/specifications/x3d-4.0.xsd'>
+  <head>
+    <component name='Scripting' level='1'/>
+    <unit category='length' name='centimetres' conversionFactor='0.01'/>
+    <meta name='title' content='document_features.x3d'/>
+    <meta name='creator' content='oxideav-x3d test suite'/>
+  </head>
+  <Scene>
+    <!-- prototype with an SFColor and an SFNode interface field -->
+    <ProtoDeclare name='ColoredBox' appinfo='A box with a colour'>
+      <ProtoInterface>
+        <field name='boxColor' type='SFColor' accessType='inputOutput' value='1 0 0'/>
+        <field name='boxSize' type='SFVec3f' accessType='initializeOnly' value='2 2 2'/>
+      </ProtoInterface>
+      <ProtoBody>
+        <Shape>
+          <Appearance>
+            <Material DEF='M'>
+              <IS><connect nodeField='diffuseColor' protoField='boxColor'/></IS>
+            </Material>
+          </Appearance>
+          <Box>
+            <IS><connect nodeField='size' protoField='boxSize'/></IS>
+          </Box>
+        </Shape>
+      </ProtoBody>
+    </ProtoDeclare>
+    <ExternProtoDeclare name='Remote' url='"remote.x3d#Remote" "https://example.com/remote.x3d#Remote"'>
+      <field name='speed' type='SFFloat' accessType='inputOutput'/>
+    </ExternProtoDeclare>
+    <WorldInfo title='Features' info='"line one" "say \"hi\""'/>
+    <Transform DEF='T' translation='1 2 3' rotation='0 1 0 1.5708'>
+      <ProtoInstance name='ColoredBox' DEF='CB'>
+        <fieldValue name='boxColor' value='0 0 1'/>
+      </ProtoInstance>
+      <Shape DEF='S'>
+        <Sphere radius='0.5'/>
+      </Shape>
+    </Transform>
+    <Transform translation='-1 0 0'>
+      <Shape USE='S'/>
+    </Transform>
+    <MysteryNode foo='bar' baz='1 2 3'>
+      <Box containerField='thing'/>
+    </MysteryNode>
+    <Script DEF='SC' directOutput='true'>
+      <field name='go' type='SFBool' accessType='inputOnly'/>
+      <field name='count' type='SFInt32' accessType='initializeOnly' value='3'/>
+      <![CDATA[ecmascript:
+function go(v) { if (v && 1 < 2) count++; }
+]]>
+    </Script>
+    <TimeSensor DEF='Clock' cycleInterval='4' loop='true'/>
+    <PositionInterpolator DEF='Mover' key='0 0.5 1' keyValue='0 0 0, 0 1 0, 0 0 0'/>
+    <ROUTE fromNode='Clock' fromField='fraction_changed' toNode='Mover' toField='set_fraction'/>
+    <ROUTE fromNode='Mover' fromField='value_changed' toNode='T' toField='set_translation'/>
+  </Scene>
+</X3D>

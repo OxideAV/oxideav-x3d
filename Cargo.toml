@@ -11,5 +11,31 @@ homepage = "https://github.com/OxideAV/oxideav-x3d"
 readme = "README.md"
 keywords = ["x3d", "vrml", "3d", "mesh", "iso-19775"]
 categories = ["multimedia", "rendering::data-formats", "parser-implementations"]
+# Fixture scenes and the fuzz crate stay out of the published package.
+exclude = ["/tests/fixtures", "/fuzz"]
+
+[features]
+default = ["registry"]
+
+# `registry` wires up `Mesh3DRegistry::register_decoder` /
+# `register_encoder` against `oxideav-core` so this crate plugs into the
+# broader oxideav framework. Drop it (`default-features = false`) for a
+# free-standing build: the X3D document parser/writer, the scene
+# conversion and the `Mesh3DDecoder` / `Mesh3DEncoder` trait impls all
+# stay available (the traits come from `oxideav-mesh3d`, which follows
+# the same standalone-friendly pattern).
+registry = ["dep:oxideav-core", "oxideav-mesh3d/registry"]
 
 [dependencies]
+# Optional under the `registry` feature so consumers can use the parser
+# API without pulling the framework dependency tree.
+oxideav-core = { version = "0.1", optional = true }
+# Typed Scene3D model + the Decoder/Encoder traits this crate implements.
+# Default features off; our `registry` feature re-enables its registry.
+oxideav-mesh3d = { version = "0.0", default-features = false }
+# `extras: HashMap<String, serde_json::Value>` side-channel (metadata
+# nodes, X3D-only fields such as Switch/LOD/Billboard parameters).
+serde_json = "1"
+# Workspace compression provider: gzip for `.x3dz` / `.x3dvz`, zlib for
+# the minimal PNG writer that materialises `PixelTexture` images.
+compcol = { version = "0.6", default-features = false, features = ["gzip", "zlib"] }
