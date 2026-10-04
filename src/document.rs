@@ -261,6 +261,8 @@ pub enum Encoding {
     Xml,
     /// ISO/IEC 19776-2 ClassicVRML encoding (`.x3dv`).
     ClassicVrml,
+    /// ISO/IEC 19776-5 JSON encoding (`.x3dj`), read only.
+    Json,
 }
 
 /// A whole X3D document.

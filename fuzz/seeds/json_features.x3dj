@@ -1,0 +1,38 @@
+{ "X3D": {
+    "encoding": "UTF-8",
+    "@profile": "Immersive",
+    "@version": "4.0",
+    "head": {
+      "meta": [ { "@name": "title", "@content": "json_features.x3dj" } ],
+      "component": [ { "@name": "Scripting", "@level": 1 } ]
+    },
+    "Scene": {
+      "-children": [
+        { "WorldInfo": { "@title": "JSON", "@info": ["first", "say \"hi\""] } },
+        { "ProtoDeclare": { "@name": "Tinted",
+            "ProtoInterface": { "field": [ { "@name": "tint", "@type": "SFColor", "@accessType": "inputOutput", "@value": [1, 0, 0] } ] },
+            "ProtoBody": { "-children": [
+              { "Shape": {
+                  "-appearance": { "Appearance": { "-material": { "Material": {
+                      "IS": { "connect": [ { "@nodeField": "diffuseColor", "@protoField": "tint" } ] } } } } },
+                  "-geometry": { "Sphere": { "@radius": 0.5 } } } } ] } } },
+        { "Transform": { "@DEF": "T", "@translation": [1, 2, 3],
+            "-children": [
+              { "#comment": "a box" },
+              { "Shape": {
+                  "-appearance": { "Appearance": { "-material": { "PhysicalMaterial": { "@baseColor": [0.2, 0.4, 0.6], "@metallic": 0.5 } } } },
+                  "-geometry": { "IndexedFaceSet": { "@coordIndex": [0, 1, 2, -1], "@solid": false,
+                      "-coord": { "Coordinate": { "@point": [0, 0, 0, 1, 0, 0, 0, 1, 0] } } } } } },
+              { "ProtoInstance": { "@name": "Tinted", "@DEF": "TI",
+                  "fieldValue": [ { "@name": "tint", "@value": [0, 1, 0] } ] } }
+            ] } },
+        { "Script": { "@DEF": "S",
+            "field": [ { "@name": "x", "@type": "SFInt32", "@accessType": "initializeOnly", "@value": 2 } ],
+            "#sourceCode": [ "ecmascript:", "function initialize() {}" ] } },
+        { "TimeSensor": { "@DEF": "Clock", "@cycleInterval": 2, "@loop": true } },
+        { "PositionInterpolator": { "@DEF": "PI", "@key": [0, 1], "@keyValue": [0, 0, 0, 0, 1, 0] } },
+        { "ROUTE": { "@fromNode": "Clock", "@fromField": "fraction_changed", "@toNode": "PI", "@toField": "set_fraction" } },
+        { "ROUTE": { "@fromNode": "PI", "@fromField": "value_changed", "@toNode": "T", "@toField": "set_translation" } }
+      ]
+    }
+} }

@@ -43,6 +43,7 @@ pub mod document;
 pub mod encoder;
 pub mod error;
 pub mod field;
+pub mod json_reader;
 pub mod nodes;
 pub mod xml;
 pub mod xml_reader;
@@ -60,7 +61,7 @@ pub use xml_writer::write_xml;
 /// Register the X3D decoder and encoders with a
 /// [`Mesh3DRegistry`](oxideav_mesh3d::Mesh3DRegistry).
 ///
-/// * decoder `"x3d"` — extensions `x3d`, `x3dz`, `x3dv`, `x3dvz`
+/// * decoder `"x3d"` — extensions `x3d`, `x3dz`, `x3dv`, `x3dvz`, `x3dj`
 ///   (encoding and compression are sniffed from the bytes);
 /// * encoder `"x3d"` — extension `x3d` (XML);
 /// * encoder `"x3dz"` — extension `x3dz` (gzip-compressed XML);
@@ -69,7 +70,7 @@ pub use xml_writer::write_xml;
 pub fn register(registry: &mut oxideav_mesh3d::Mesh3DRegistry) {
     registry.register_decoder(
         "x3d",
-        &["x3d", "x3dz", "x3dv", "x3dvz"],
+        &["x3d", "x3dz", "x3dv", "x3dvz", "x3dj"],
         Box::new(|| Box::new(X3dDecoder::new())),
     );
     registry.register_encoder("x3d", &["x3d"], Box::new(|| Box::new(X3dEncoder::new())));
@@ -151,7 +152,7 @@ pub fn gzip(bytes: &[u8]) -> Result<Vec<u8>> {
 
 /// Parse an X3D document from raw bytes, auto-detecting gzip
 /// compression and the encoding (XML when the first significant
-/// character is `<`, otherwise ClassicVRML).
+/// character is `<`, ClassicVRML for a `#X3D` header, JSON for `{`).
 pub fn parse_document(bytes: &[u8]) -> Result<X3dDocument> {
     parse_document_with_limits(bytes, &Limits::default())
 }
@@ -177,8 +178,9 @@ pub fn parse_document_with_limits(bytes: &[u8], limits: &Limits) -> Result<X3dDo
     match first {
         Some('<') => xml_reader::read_xml(&text, limits),
         Some('#') if classic::looks_classic(&text) => classic::read_classic(&text, limits),
+        Some('{') => json_reader::read_json(&text, limits),
         Some(_) => Err(Error::invalid(
-            "neither an XML (<X3D>) nor a ClassicVRML (#X3D) document",
+            "not an XML (<X3D>), ClassicVRML (#X3D) or JSON ({\"X3D\":..}) document",
         )),
         None => Err(Error::invalid("empty input")),
     }
