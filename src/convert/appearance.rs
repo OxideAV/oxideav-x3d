@@ -23,7 +23,7 @@ use oxideav_mesh3d::{
     AlphaMode, InMemoryAsset, MagFilter, Material, MinFilter, Sampler, Texture, TextureRef,
     WrapMode,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use super::geometry::TexTransform2;
 use crate::document::{NodeIdx, X3dDocument, X3dNode};
@@ -200,11 +200,11 @@ impl MaterialBuilder {
                         m.normal_texture = self.tex_ref(doc, scene, mn, "normalTexture", warnings);
                         m.occlusion_texture =
                             self.tex_ref(doc, scene, mn, "occlusionTexture", warnings);
-                        if m.base_color_texture.is_none() {
-                            if let Some(t) = app_tex {
-                                m.base_color_texture =
-                                    self.texture(doc, scene, t, warnings).map(TextureRef::new);
-                            }
+                        if m.base_color_texture.is_none()
+                            && let Some(t) = app_tex
+                        {
+                            m.base_color_texture =
+                                self.texture(doc, scene, t, warnings).map(TextureRef::new);
                         }
                         if key.has_colors {
                             // Colour nodes replace baseColor.
@@ -268,11 +268,11 @@ impl MaterialBuilder {
                         m.normal_texture = self.tex_ref(doc, scene, mn, "normalTexture", warnings);
                         m.occlusion_texture =
                             self.tex_ref(doc, scene, mn, "occlusionTexture", warnings);
-                        if m.base_color_texture.is_none() {
-                            if let Some(t) = app_tex {
-                                m.base_color_texture =
-                                    self.texture(doc, scene, t, warnings).map(TextureRef::new);
-                            }
+                        if m.base_color_texture.is_none()
+                            && let Some(t) = app_tex
+                        {
+                            m.base_color_texture =
+                                self.texture(doc, scene, t, warnings).map(TextureRef::new);
                         }
                         if other == "TwoSidedMaterial" {
                             m.double_sided = true;
@@ -336,10 +336,10 @@ impl MaterialBuilder {
         if alpha_mode != "AUTO" {
             extras_mat.insert("alphaMode".into(), json!(alpha_mode));
         }
-        if let Some(t) = app_tex.and_then(|t| doc.node(t)) {
-            if t.type_name == "MultiTexture" {
-                extras_mat.insert("multiTexture".into(), json!(t.children_of("texture").len()));
-            }
+        if let Some(t) = app_tex.and_then(|t| doc.node(t))
+            && t.type_name == "MultiTexture"
+        {
+            extras_mat.insert("multiTexture".into(), json!(t.children_of("texture").len()));
         }
         if let Some(tt) = app
             .children_of("textureTransform")
@@ -381,12 +381,13 @@ fn percent_decode(s: &str) -> Vec<u8> {
     let mut out = Vec::with_capacity(b.len());
     let mut i = 0;
     while i < b.len() {
-        if b[i] == b'%' && i + 2 < b.len() {
-            if let (Some(h), Some(l)) = (hex(b[i + 1]), hex(b[i + 2])) {
-                out.push((h * 16 + l) as u8);
-                i += 3;
-                continue;
-            }
+        if b[i] == b'%'
+            && i + 2 < b.len()
+            && let (Some(h), Some(l)) = (hex(b[i + 1]), hex(b[i + 2]))
+        {
+            out.push((h * 16 + l) as u8);
+            i += 3;
+            continue;
         }
         out.push(b[i]);
         i += 1;

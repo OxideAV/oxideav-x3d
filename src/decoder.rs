@@ -2,8 +2,8 @@
 
 use oxideav_mesh3d::{Mesh3DDecoder, Scene3D};
 
-use crate::convert::{document_to_scene, ConvertOptions, UrlResolver};
 use crate::Limits;
+use crate::convert::{ConvertOptions, UrlResolver, document_to_scene};
 
 /// X3D decoder: XML (`.x3d`), ClassicVRML (`.x3dv`) and their gzip
 /// forms (`.x3dz`, `.x3dvz`), auto-detected from the bytes.

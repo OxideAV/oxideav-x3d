@@ -12,10 +12,10 @@
 
 use serde_json::Value;
 
+use crate::Limits;
 use crate::document::{Encoding, X3dDocument};
 use crate::error::{Error, Result};
 use crate::xml::{Element, XmlNode};
-use crate::Limits;
 
 /// Parse JSON-encoded X3D text.
 pub fn read_json(src: &str, limits: &Limits) -> Result<X3dDocument> {

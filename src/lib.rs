@@ -50,10 +50,10 @@ pub mod xml_reader;
 pub mod xml_writer;
 
 pub use classic::{read_classic, write_classic};
-pub use convert::{document_to_scene, ConvertOptions};
+pub use convert::{ConvertOptions, document_to_scene};
 pub use decoder::X3dDecoder;
 pub use document::{NodeIdx, X3dDocument, X3dNode};
-pub use encoder::{scene_to_document, X3dEncoder};
+pub use encoder::{X3dEncoder, scene_to_document};
 pub use error::{Error, Result};
 pub use field::{AccessType, FieldData, FieldType, FieldValue};
 pub use xml_writer::write_xml;
@@ -192,7 +192,9 @@ fn decode_text(bytes: &[u8]) -> Result<String> {
     if bytes.len() >= 2 && (bytes[..2] == [0xff, 0xfe] || bytes[..2] == [0xfe, 0xff]) {
         let le = bytes[0] == 0xff;
         let units: Vec<u16> = bytes[2..]
-            .chunks_exact(2)
+            .as_chunks::<2>()
+            .0
+            .iter()
             .map(|c| {
                 if le {
                     u16::from_le_bytes([c[0], c[1]])

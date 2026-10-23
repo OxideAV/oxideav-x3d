@@ -408,7 +408,9 @@ impl FieldValue {
     /// tuple dropped).
     pub fn as_tuples<const N: usize>(&self) -> Vec<[f32; N]> {
         let f = self.as_f32s();
-        f.chunks_exact(N)
+        f.as_chunks::<N>()
+            .0
+            .iter()
             .map(|c| {
                 let mut a = [0.0f32; N];
                 a.copy_from_slice(c);

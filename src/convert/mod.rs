@@ -36,12 +36,12 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::sync::Arc;
 
 use oxideav_mesh3d::{Camera, Light, Mesh, MeshId, Node, NodeId, Scene3D, Transform, Unit};
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 
+use crate::Limits;
 use crate::document::{NodeIdx, NodeKind, X3dDocument, X3dNode};
 use crate::error::{Error, Result};
 use crate::field::FieldData;
-use crate::Limits;
 use appearance::{MatKey, MaterialBuilder};
 use geometry::{BuildNotes, GeomOptions};
 use math::{quat_between, quat_from_axis_angle};
@@ -456,13 +456,11 @@ impl Conv<'_> {
         match t {
             "Transform" | "HAnimJoint" | "HAnimSite" | "CADPart" | "EspduTransform" => {
                 let mut node = self.new_node(idx, n)?;
-                if t == "HAnimJoint" || t == "HAnimSite" {
-                    if let Some(name) = n.value("name").and_then(|v| v.as_str().map(str::to_string))
-                    {
-                        if !name.is_empty() {
-                            node.extras.insert("x3d:hanimName".into(), json!(name));
-                        }
-                    }
+                if (t == "HAnimJoint" || t == "HAnimSite")
+                    && let Some(name) = n.value("name").and_then(|v| v.as_str().map(str::to_string))
+                    && !name.is_empty()
+                {
+                    node.extras.insert("x3d:hanimName".into(), json!(name));
                 }
                 self.transform_plan(idx, n, node, &["children"], false);
                 Ok(Vec::new())
@@ -627,10 +625,9 @@ impl Conv<'_> {
                 if let Some(d) = n
                     .value("description")
                     .and_then(|v| v.as_str().map(str::to_string))
+                    && !d.is_empty()
                 {
-                    if !d.is_empty() {
-                        ex.insert("description".into(), json!(d));
-                    }
+                    ex.insert("description".into(), json!(d));
                 }
                 ex.insert(
                     "centerOfRotation".into(),

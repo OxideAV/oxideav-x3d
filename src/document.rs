@@ -141,10 +141,10 @@ impl X3dNode {
         if let Some(v) = self.get(name) {
             return Some(v.clone());
         }
-        if let Some(t) = self.def_table() {
-            if let Some(f) = t.field(name) {
-                return Some(f.default_value());
-            }
+        if let Some(t) = self.def_table()
+            && let Some(f) = t.field(name)
+        {
+            return Some(f.default_value());
         }
         self.decls
             .iter()

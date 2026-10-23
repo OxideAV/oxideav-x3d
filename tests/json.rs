@@ -2,7 +2,7 @@
 
 use oxideav_mesh3d::Mesh3DDecoder;
 use oxideav_x3d::document::Encoding;
-use oxideav_x3d::{parse_document, X3dDecoder};
+use oxideav_x3d::{X3dDecoder, parse_document};
 
 fn fixture() -> Vec<u8> {
     std::fs::read(format!(

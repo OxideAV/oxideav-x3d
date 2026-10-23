@@ -17,8 +17,8 @@ use std::collections::HashMap;
 use oxideav_mesh3d::{NodeId, Skeleton, Skin};
 use serde_json::json;
 
-use super::math::{mat_inverse, mat_mul, Mat4, IDENTITY};
 use super::Conv;
+use super::math::{IDENTITY, Mat4, mat_inverse, mat_mul};
 use crate::document::NodeIdx;
 
 /// Humanoid-relative rest matrices of every node under `root`.

@@ -9,7 +9,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::document::{FieldDecl, NodeIdx, NodeKind, ProtoDecl, SceneBody, X3dDocument};
-use crate::field::{format_xml_value, FieldData, FieldType};
+use crate::field::{FieldData, FieldType, format_xml_value};
 use crate::nodes;
 use crate::xml::write_attr;
 
@@ -257,13 +257,11 @@ impl<'d> Writer<'d> {
         write_attr(&mut self.out, "type", d.ty.name());
         write_attr(&mut self.out, "accessType", d.access.name());
         let mut node_children: &[NodeIdx] = &[];
-        if with_value {
-            if let Some(v) = &d.value {
-                if matches!(v.data, FieldData::Node(_)) {
-                    node_children = v.as_nodes();
-                } else {
-                    write_attr(&mut self.out, "value", &format_xml_value(v));
-                }
+        if with_value && let Some(v) = &d.value {
+            if matches!(v.data, FieldData::Node(_)) {
+                node_children = v.as_nodes();
+            } else {
+                write_attr(&mut self.out, "value", &format_xml_value(v));
             }
         }
         if node_children.is_empty() {

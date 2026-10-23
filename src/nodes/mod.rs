@@ -11,8 +11,8 @@
 #[rustfmt::skip]
 mod generated;
 
-use crate::field::{parse_xml_value, FieldValue};
 pub use crate::field::{AccessType, FieldType};
+use crate::field::{FieldValue, parse_xml_value};
 
 /// One field of a node interface.
 #[derive(Clone, Copy, Debug)]

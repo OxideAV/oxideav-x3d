@@ -17,10 +17,10 @@
 
 use std::collections::{HashMap, HashSet};
 
+use crate::Limits;
 use crate::document::{NodeIdx, NodeKind, Route, X3dDocument};
 use crate::error::{Error, Result};
 use crate::field::{AccessType, FieldData};
-use crate::Limits;
 
 /// Expand all reachable prototype instances in place. Returns the
 /// routes of the expanded bodies (endpoints remapped to the copies).
@@ -229,10 +229,9 @@ impl Expander<'_> {
                 if let Some(fd) = doc.nodes[new.index()]
                     .def_table()
                     .and_then(|t| t.field(&c.node_field))
+                    && fd.ty.storage() == v.ty.storage()
                 {
-                    if fd.ty.storage() == v.ty.storage() {
-                        v.ty = fd.ty;
-                    }
+                    v.ty = fd.ty;
                 }
                 doc.nodes[new.index()].set(c.node_field.clone(), v);
             }

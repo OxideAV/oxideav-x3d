@@ -12,8 +12,8 @@
 //! depth costs heap, not native stack, and is additionally capped by
 //! [`Limits::max_depth`](crate::Limits::max_depth).
 
-use crate::error::{Error, Result};
 use crate::Limits;
+use crate::error::{Error, Result};
 
 /// One element of a parsed XML document.
 #[derive(Clone, Debug, Default, PartialEq)]

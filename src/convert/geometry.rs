@@ -124,7 +124,9 @@ fn tuples_of<const N: usize>(v: &FieldValue, _node: &X3dNode, _name: &str) -> Ve
             .filter_map(|t| t.parse::<f32>().ok())
             .collect();
         return f
-            .chunks_exact(N)
+            .as_chunks::<N>()
+            .0
+            .iter()
             .map(|c| {
                 let mut a = [0.0; N];
                 a.copy_from_slice(c);
@@ -482,7 +484,7 @@ fn finish_soup(
 
 /// Default IndexedFaceSet texture coordinates from the bounding box
 /// (ISO/IEC 19775-1 13.3.6).
-fn bbox_uv(pts: &[[f32; 3]]) -> impl Fn([f32; 3]) -> [f32; 2] {
+fn bbox_uv(pts: &[[f32; 3]]) -> impl Fn([f32; 3]) -> [f32; 2] + use<> {
     let mut lo = [f32::INFINITY; 3];
     let mut hi = [f32::NEG_INFINITY; 3];
     for p in pts {
@@ -942,10 +944,10 @@ fn extrusion_frames(spine: &[[f32; 3]]) -> Vec<[[f32; 3]; 3]> {
     let mut last_z: Option<[f32; 3]> = None;
     for i in 0..n {
         let mut z = zs[i].or(last_z).unwrap_or([0.0, 0.0, 1.0]);
-        if let Some(lz) = last_z {
-            if dot(z, lz) < 0.0 {
-                z = scale(z, -1.0);
-            }
+        if let Some(lz) = last_z
+            && dot(z, lz) < 0.0
+        {
+            z = scale(z, -1.0);
         }
         last_z = Some(z);
         let y = ys[i].unwrap_or([0.0, 1.0, 0.0]);
@@ -1188,10 +1190,10 @@ fn point_set(
         c.resize(n, [1.0; 4]);
         prim.colors = vec![c];
     }
-    if let Some(ns) = normals(doc, node) {
-        if ns.len() >= n {
-            prim.normals = Some(ns[..n].to_vec());
-        }
+    if let Some(ns) = normals(doc, node)
+        && ns.len() >= n
+    {
+        prim.normals = Some(ns[..n].to_vec());
     }
     prim.positions = pts;
     Some((prim, (0..n as u32).collect(), cols.is_some()))
@@ -1220,14 +1222,15 @@ impl Direct {
 
     fn finish(self, tex: Option<&TexTransform2>) -> Primitive {
         let mut prim = Primitive::new(Topology::Triangles);
-        prim.uvs = vec![self
-            .st
-            .iter()
-            .map(|&st| {
-                let st = tex.map(|t| t.apply(st)).unwrap_or(st);
-                [st[0], 1.0 - st[1]]
-            })
-            .collect()];
+        prim.uvs = vec![
+            self.st
+                .iter()
+                .map(|&st| {
+                    let st = tex.map(|t| t.apply(st)).unwrap_or(st);
+                    [st[0], 1.0 - st[1]]
+                })
+                .collect(),
+        ];
         prim.positions = self.pos;
         prim.normals = Some(self.nrm);
         prim.indices = Some(Indices::U32(self.idx));
@@ -1460,7 +1463,7 @@ fn surface_2d(
                 }
             }
             let big = (hi[0] - lo[0]).max(hi[1] - lo[1]).max(1e-12);
-            for t in v.chunks_exact(3) {
+            for t in v.as_chunks::<3>().0 {
                 for p in t {
                     d.v(
                         [p[0], p[1], 0.0],

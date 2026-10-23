@@ -300,10 +300,11 @@ fn animations_from_routes() {
         .unwrap();
     assert_eq!(tr.sampler.keyframes, vec![0.0, 2.0, 4.0]);
     assert!(matches!(&tr.sampler.values, AnimationValues::Vec3(v) if v[1] == [0.0, 2.0, 0.0]));
-    assert!(a
-        .channels
-        .iter()
-        .any(|c| c.target.node.0 == mover && c.target.property == AnimationProperty::Scale));
+    assert!(
+        a.channels
+            .iter()
+            .any(|c| c.target.node.0 == mover && c.target.property == AnimationProperty::Scale)
+    );
     let rot = a
         .channels
         .iter()
@@ -430,9 +431,11 @@ fn metadata_and_environment_extras() {
     let m = node_named(&s, "M");
     let md = m.extras["x3d:metadata"].to_string();
     assert!(md.contains("author") && md.contains("2.5"), "{md}");
-    assert!(node_named(&s, "Inl").extras["x3d:inline"]
-        .to_string()
-        .contains("part.x3d"));
+    assert!(
+        node_named(&s, "Inl").extras["x3d:inline"]
+            .to_string()
+            .contains("part.x3d")
+    );
 }
 
 #[test]

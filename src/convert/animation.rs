@@ -25,10 +25,10 @@ use oxideav_mesh3d::{
     Animation, AnimationChannel, AnimationProperty, AnimationSampler, AnimationValues,
     Interpolation, MorphTarget, Transform,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
-use super::math::quat_from_axis_angle;
 use super::Conv;
+use super::math::quat_from_axis_angle;
 use crate::document::{NodeIdx, Route};
 
 fn base_field(f: &str) -> &str {

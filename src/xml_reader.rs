@@ -12,15 +12,15 @@
 
 use std::collections::HashMap;
 
+use crate::Limits;
 use crate::document::{
     ComponentDecl, Encoding, Export, FieldDecl, Import, IsConnect, NodeIdx, NodeKind, ProtoDecl,
     Route, SceneBody, UnitDecl, X3dDocument, X3dNode,
 };
 use crate::error::{Error, Result};
-use crate::field::{parse_xml_value, AccessType, FieldType, FieldValue};
+use crate::field::{AccessType, FieldType, FieldValue, parse_xml_value};
 use crate::nodes;
 use crate::xml::{self, Element, XmlNode};
-use crate::Limits;
 
 /// Parse an XML-encoded X3D document from text.
 pub fn read_xml(src: &str, limits: &Limits) -> Result<X3dDocument> {
@@ -221,10 +221,10 @@ impl Reader<'_> {
             appinfo: el.attr("appinfo").map(str::to_string),
         };
         if external {
-            if let Some(u) = el.attr("url") {
-                if let Ok(v) = parse_xml_value(FieldType::MFString, u) {
-                    decl.url = v.as_strings().to_vec();
-                }
+            if let Some(u) = el.attr("url")
+                && let Ok(v) = parse_xml_value(FieldType::MFString, u)
+            {
+                decl.url = v.as_strings().to_vec();
             }
             for f in el.elements().filter(|e| e.local_name() == "field") {
                 if let Some(d) = self.read_field_decl(f, 1)? {
@@ -248,16 +248,19 @@ impl Reader<'_> {
         // (recursion is bounded at expansion time).
         self.scope().protos.insert(name, idx);
         if !external {
-            if let Some(b) = el.elements().find(|e| e.local_name() == "ProtoBody") {
-                self.scopes.push(Scope::default());
-                let mut body = SceneBody::default();
-                let res = self.read_body(b, &mut body);
-                self.finish_scope(&mut body);
-                self.scopes.pop();
-                res?;
-                self.doc.protos[idx].body = Some(body);
-            } else {
-                self.doc.protos[idx].body = Some(SceneBody::default());
+            match el.elements().find(|e| e.local_name() == "ProtoBody") {
+                Some(b) => {
+                    self.scopes.push(Scope::default());
+                    let mut body = SceneBody::default();
+                    let res = self.read_body(b, &mut body);
+                    self.finish_scope(&mut body);
+                    self.scopes.pop();
+                    res?;
+                    self.doc.protos[idx].body = Some(body);
+                }
+                _ => {
+                    self.doc.protos[idx].body = Some(SceneBody::default());
+                }
             }
         }
         Ok(idx)
@@ -289,12 +292,12 @@ impl Reader<'_> {
                 }
             }
             // `value="DEFname"` initialisation (19776-1 5.13 example 2).
-            if let Some(v) = el.attr("value").map(str::trim) {
-                if !v.is_empty() && v != "NULL" {
-                    if let Some(&i) = self.scope().defs.get(v) {
-                        nodes_v.push(i);
-                    }
-                }
+            if let Some(v) = el.attr("value").map(str::trim)
+                && !v.is_empty()
+                && v != "NULL"
+                && let Some(&i) = self.scope().defs.get(v)
+            {
+                nodes_v.push(i);
             }
             if ty == FieldType::SFNode {
                 nodes_v.truncate(1);

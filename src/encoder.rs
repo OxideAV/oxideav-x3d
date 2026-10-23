@@ -41,7 +41,7 @@ use serde_json::Value;
 use crate::convert::appearance::base64_encode;
 use crate::convert::math::axis_angle_from_quat;
 use crate::document::{ComponentDecl, NodeIdx, Route, UnitDecl, X3dDocument, X3dNode};
-use crate::field::{parse_xml_value, FieldData, FieldType, FieldValue};
+use crate::field::{FieldData, FieldType, FieldValue, parse_xml_value};
 use crate::nodes;
 
 /// X3D XML encoder.
@@ -330,24 +330,22 @@ impl Enc<'_> {
             && sn.light.is_none()
             && sn.skin.is_none()
             && !sn.extras.contains_key("x3d:metadata")
+            && let Some(m) = sn.mesh
         {
-            if let Some(m) = sn.mesh {
-                let existing_def = self
-                    .shape_map
-                    .get(&(m, 0))
-                    .and_then(|i| self.doc.nodes[i.index()].def.clone());
-                let fresh = !self.shape_map.contains_key(&(m, 0));
-                let same_name = match (&sn.name, &existing_def) {
-                    (None, _) => true,
-                    (Some(n), Some(d)) => sanitise(n) == *d,
-                    _ => false,
-                };
-                if self.scene.mesh(m).map(|x| x.primitives.len()) == Some(1) && (fresh || same_name)
-                {
-                    let i = self.shape(m, 0, sn.name.as_deref().filter(|_| fresh))?;
-                    self.node_map.insert(id, i);
-                    return Some(i);
-                }
+            let existing_def = self
+                .shape_map
+                .get(&(m, 0))
+                .and_then(|i| self.doc.nodes[i.index()].def.clone());
+            let fresh = !self.shape_map.contains_key(&(m, 0));
+            let same_name = match (&sn.name, &existing_def) {
+                (None, _) => true,
+                (Some(n), Some(d)) => sanitise(n) == *d,
+                _ => false,
+            };
+            if self.scene.mesh(m).map(|x| x.primitives.len()) == Some(1) && (fresh || same_name) {
+                let i = self.shape(m, 0, sn.name.as_deref().filter(|_| fresh))?;
+                self.node_map.insert(id, i);
+                return Some(i);
             }
         }
         let mut t = X3dNode::new("Transform");
@@ -379,28 +377,28 @@ impl Enc<'_> {
         if sc != [1.0; 3] {
             t.set("scale", fv3(FieldType::SFVec3f, sc));
         }
-        if let Some(md) = sn.extras.get("x3d:metadata") {
-            if let Some(m) = self.node_from_json(md, 0) {
-                t.set("metadata", FieldValue::nodes(FieldType::SFNode, vec![m]));
-            }
+        if let Some(md) = sn.extras.get("x3d:metadata")
+            && let Some(m) = self.node_from_json(md, 0)
+        {
+            t.set("metadata", FieldValue::nodes(FieldType::SFNode, vec![m]));
         }
         let mut kids = Vec::new();
-        if let Some(c) = sn.camera {
-            if let Some(i) = self.camera(c.0 as usize, sn) {
-                kids.push(i);
-            }
+        if let Some(c) = sn.camera
+            && let Some(i) = self.camera(c.0 as usize, sn)
+        {
+            kids.push(i);
         }
-        if let Some(l) = sn.light {
-            if let Some(i) = self.light(l.0 as usize) {
-                kids.push(i);
-            }
+        if let Some(l) = sn.light
+            && let Some(i) = self.light(l.0 as usize)
+        {
+            kids.push(i);
         }
-        if let Some(m) = sn.mesh {
-            if let Some(mesh) = self.scene.mesh(m) {
-                for p in 0..mesh.primitives.len() {
-                    if let Some(i) = self.shape(m, p, None) {
-                        kids.push(i);
-                    }
+        if let Some(m) = sn.mesh
+            && let Some(mesh) = self.scene.mesh(m)
+        {
+            for p in 0..mesh.primitives.len() {
+                if let Some(i) = self.shape(m, p, None) {
+                    kids.push(i);
                 }
             }
         }
@@ -658,16 +656,16 @@ impl Enc<'_> {
                 let mut ci = Vec::new();
                 match prim.topology {
                     Topology::Lines => {
-                        for p in index_list.chunks_exact(2) {
+                        for p in index_list.as_chunks::<2>().0 {
                             ci.extend_from_slice(&[p[0] as i32, p[1] as i32, -1]);
                         }
                     }
                     _ => {
                         ci.extend(index_list.iter().map(|&i| i as i32));
-                        if prim.topology == Topology::LineLoop {
-                            if let Some(&f) = index_list.first() {
-                                ci.push(f as i32);
-                            }
+                        if prim.topology == Topology::LineLoop
+                            && let Some(&f) = index_list.first()
+                        {
+                            ci.push(f as i32);
                         }
                     }
                 }

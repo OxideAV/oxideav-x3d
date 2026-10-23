@@ -2,7 +2,7 @@
 //! routes, unknown-node preservation and XML write → read round trips.
 
 use oxideav_x3d::document::NodeKind;
-use oxideav_x3d::{parse_document, write_xml, FieldType, X3dDocument};
+use oxideav_x3d::{FieldType, X3dDocument, parse_document, write_xml};
 
 fn load(name: &str) -> X3dDocument {
     let path = format!("{}/tests/fixtures/{name}", env!("CARGO_MANIFEST_DIR"));

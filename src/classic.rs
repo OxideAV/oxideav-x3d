@@ -23,8 +23,8 @@ use crate::document::{
     Route, SceneBody, UnitDecl, X3dDocument, X3dNode,
 };
 use crate::error::{Error, Result};
-use crate::field::{format_value, AccessType, FieldData, FieldType, FieldValue, SFImage};
-use crate::{nodes, Limits};
+use crate::field::{AccessType, FieldData, FieldType, FieldValue, SFImage, format_value};
+use crate::{Limits, nodes};
 
 fn to_v_access(a: AccessType) -> v::AccessType {
     match a {

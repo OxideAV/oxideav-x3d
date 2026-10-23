@@ -2,7 +2,7 @@
 //! syntax layer, XML ↔ ClassicVRML conversion, scene round trips.
 
 use oxideav_mesh3d::{Mesh3DDecoder, Mesh3DEncoder};
-use oxideav_x3d::{parse_document, write_classic, write_xml, X3dDecoder, X3dEncoder};
+use oxideav_x3d::{X3dDecoder, X3dEncoder, parse_document, write_classic, write_xml};
 
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(format!(

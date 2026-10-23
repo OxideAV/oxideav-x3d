@@ -297,10 +297,11 @@ fn programmatic_scene_round_trip() {
         .unwrap();
     // Step emulated with a duplicated key (nudged to stay increasing).
     assert_eq!(rot.sampler.keyframes.len(), 3);
-    assert!(an
-        .channels
-        .iter()
-        .any(|c| c.target.property == AnimationProperty::MorphWeights));
+    assert!(
+        an.channels
+            .iter()
+            .any(|c| c.target.property == AnimationProperty::MorphWeights)
+    );
 }
 
 #[test]
