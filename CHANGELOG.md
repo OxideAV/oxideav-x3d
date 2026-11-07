@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.0.3](https://github.com/OxideAV/oxideav-x3d/compare/v0.0.2...v0.0.3) - 2026-11-07
+
+### Other
+
+- API hygiene: non_exhaustive Error/Encoding/Limits/ConvertOptions, hide internals
+
 ### Changed
 
 - `#[non_exhaustive]` on the `Error` and `Encoding` enums and on the `Limits` and `ConvertOptions` records (build them with `Default` / `new()` and the `with_*` builders). `AccessType`, `FieldType` and `NodeKind` stay exhaustive (ISO/IEC 19775-1 fixes the access types and field types); the document-model records are left as they are.
