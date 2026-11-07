@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- `#[non_exhaustive]` on the `Error` and `Encoding` enums and on the `Limits` and `ConvertOptions` records (build them with `Default` / `new()` and the `with_*` builders). `AccessType`, `FieldType` and `NodeKind` stay exhaustive (ISO/IEC 19775-1 fixes the access types and field types); the document-model records are left as they are.
+- `#[doc(hidden)]` on the internal `xml` tokenizer and `nodes` table modules and on the `convert::{appearance, geometry, proto}` conversion stages.
+
+### Added
+
+- `Limits::new` / `ConvertOptions::new` plus a `with_<field>` builder for every field of both records.
+
 ## [0.0.2](https://github.com/OxideAV/oxideav-x3d/compare/v0.0.1...v0.0.2) - 2026-10-23
 
 ### Other

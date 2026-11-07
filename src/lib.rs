@@ -44,7 +44,9 @@ pub mod encoder;
 pub mod error;
 pub mod field;
 pub mod json_reader;
+#[doc(hidden)]
 pub mod nodes;
+#[doc(hidden)]
 pub mod xml;
 pub mod xml_reader;
 pub mod xml_writer;
@@ -93,6 +95,7 @@ pub fn register(registry: &mut oxideav_mesh3d::Mesh3DRegistry) {
 
 /// Hostile-input bounds applied while reading.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
 pub struct Limits {
     /// Largest accepted (decompressed) input, in bytes.
     pub max_input_bytes: usize,
@@ -121,6 +124,55 @@ impl Default for Limits {
             max_proto_depth: 16,
             max_vertices: 64 << 20,
         }
+    }
+}
+
+impl Limits {
+    /// The default bounds.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set `max_input_bytes`.
+    pub fn with_max_input_bytes(mut self, max_input_bytes: usize) -> Self {
+        self.max_input_bytes = max_input_bytes;
+        self
+    }
+
+    /// Set `max_depth`.
+    pub fn with_max_depth(mut self, max_depth: usize) -> Self {
+        self.max_depth = max_depth;
+        self
+    }
+
+    /// Set `max_elements`.
+    pub fn with_max_elements(mut self, max_elements: u64) -> Self {
+        self.max_elements = max_elements;
+        self
+    }
+
+    /// Set `max_attributes`.
+    pub fn with_max_attributes(mut self, max_attributes: usize) -> Self {
+        self.max_attributes = max_attributes;
+        self
+    }
+
+    /// Set `max_nodes`.
+    pub fn with_max_nodes(mut self, max_nodes: usize) -> Self {
+        self.max_nodes = max_nodes;
+        self
+    }
+
+    /// Set `max_proto_depth`.
+    pub fn with_max_proto_depth(mut self, max_proto_depth: usize) -> Self {
+        self.max_proto_depth = max_proto_depth;
+        self
+    }
+
+    /// Set `max_vertices`.
+    pub fn with_max_vertices(mut self, max_vertices: usize) -> Self {
+        self.max_vertices = max_vertices;
+        self
     }
 }
 

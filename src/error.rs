@@ -11,6 +11,7 @@ use std::fmt;
 
 /// Errors produced while reading or writing X3D.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Error {
     /// Lexical or syntactic violation of the encoding (XML
     /// well-formedness, ClassicVRML grammar). `line` / `column` are

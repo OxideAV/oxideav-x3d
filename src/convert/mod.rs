@@ -26,10 +26,13 @@
 //! | WorldInfo, NavigationInfo, Background, ... | scene extras |
 
 mod animation;
+#[doc(hidden)]
 pub mod appearance;
+#[doc(hidden)]
 pub mod geometry;
 mod hanim;
 pub(crate) mod math;
+#[doc(hidden)]
 pub mod proto;
 
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -51,6 +54,7 @@ pub type UrlResolver = Arc<dyn Fn(&str) -> Option<Vec<u8>> + Send + Sync>;
 
 /// Options for [`document_to_scene`].
 #[derive(Clone)]
+#[non_exhaustive]
 pub struct ConvertOptions {
     /// Circumference segments for the analytic primitives.
     pub segments: u32,
@@ -70,6 +74,37 @@ impl Default for ConvertOptions {
             inline_resolver: None,
             inline_depth: 8,
         }
+    }
+}
+
+impl ConvertOptions {
+    /// The default options: 32 segments, default limits, no `Inline` resolver.
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Set `segments`.
+    pub fn with_segments(mut self, segments: u32) -> Self {
+        self.segments = segments;
+        self
+    }
+
+    /// Set `limits`.
+    pub fn with_limits(mut self, limits: Limits) -> Self {
+        self.limits = limits;
+        self
+    }
+
+    /// Set `inline_resolver`.
+    pub fn with_inline_resolver(mut self, inline_resolver: Option<UrlResolver>) -> Self {
+        self.inline_resolver = inline_resolver;
+        self
+    }
+
+    /// Set `inline_depth`.
+    pub fn with_inline_depth(mut self, inline_depth: u32) -> Self {
+        self.inline_depth = inline_depth;
+        self
     }
 }
 

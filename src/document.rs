@@ -255,6 +255,7 @@ pub struct UnitDecl {
 
 /// Which encoding a document was read from.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+#[non_exhaustive]
 pub enum Encoding {
     /// ISO/IEC 19776-1 XML encoding (`.x3d`).
     #[default]
